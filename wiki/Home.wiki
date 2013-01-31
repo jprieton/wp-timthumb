@@ -10,7 +10,7 @@ $params = array(
 
 = Mostrar la imagen destacada del post =
 
-Busca la imagen destacada del post
+Busca la imagen destacada del post e imprime un string con la url de la imagen.
 
 {{{
 <div>
@@ -23,6 +23,7 @@ Busca la imagen destacada del post
 
 = Obtener la imagen destacada del post =
 
+Busca la imagen destacada del post y devuelve un objeto u string
 {{{
 <?php
 while(have_posts()) {
