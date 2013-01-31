@@ -16,7 +16,7 @@ Busca la imagen destacada del post
 <div>
   <?php while(have_posts()) : ?>
     <?php the_post(); ?>
-    <img src="<?php the_featured_image()?>"
+    <img src="<?php the_featured_image()?>" alt="">
   <?php } ?>
 <div>
 }}}
