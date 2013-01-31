@@ -8,6 +8,30 @@ $params = array(
 )
 }}}
 
+= Mostrar la imagen destacada del post =
+
+Busca la imagen destacada del post
+
+{{{
+<div>
+  <?php while(have_posts()) : ?>
+    <?php the_post(); ?>
+    <img src="<?php the_featured_image()?>"
+  <?php } ?>
+<div>
+}}}
+
+= Obtener la imagen destacada del post =
+
+{{{
+<?php
+while(have_posts()) {
+  the_post();
+  $image = get_featured_image()
+}
+?>
+}}}
+
 = Obtener la primera imagen =
 
 {{{
