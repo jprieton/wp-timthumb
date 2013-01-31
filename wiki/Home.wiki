@@ -1,0 +1,10 @@
+= Obtener la primera imagen =
+
+{{{
+<?php
+while(have_posts()) {
+  the_post();
+  $image = get_first_image()
+}
+?>
+}}}
