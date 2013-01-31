@@ -21,7 +21,13 @@ while(have_posts()) {
 }}}
 
 = Obtener todos los adjuntos =
-
+== Parametros ==
+{{{
+$params = array(
+  'limit' => -1  // Todas las imágenes
+)
+}}}
+== Uso ==
 {{{
 <?php
 while(have_posts()) {
