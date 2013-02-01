@@ -51,4 +51,4 @@ $args = array(
 }}}
 
 = Relacionado =
-[GetFirstImage]
+[GetFirstImage get_first_image()]
