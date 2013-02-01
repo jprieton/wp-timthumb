@@ -169,7 +169,7 @@ class WP_Timthumb {
 			$params['attachment_id'] = $_item->ID;
 			$_image = $this->get_attachment_image($params);
 			$params['src'] = $_image;
-			unset($params['df']);
+			unset($params['default']);
 			$image[] = $_item->thumbnail = $this->get_timthumb_src($params);
 		}
 		unset($_item);
@@ -206,8 +206,8 @@ class WP_Timthumb {
 			$attachments = $attachments[0];
 
 		if (empty($attachments)) {
-			if (isset($params['df'])) {
-				$attachments = get_bloginfo('template_url') . $params['df'];
+			if (isset($params['default'])) {
+				$attachments = get_bloginfo('template_url') . $params['default'];
 			} else {
 				$attachments = '';
 			}

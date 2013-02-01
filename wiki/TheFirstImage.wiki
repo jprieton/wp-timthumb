@@ -1,13 +1,13 @@
-#summary Método get_first_image()
+#summary Método the_first_image()
 
 = Descripción =
 
-Devuelve la primera imagen del post.
+Muestra la url de la primera imagen del post.
 
 = Uso =
 
 {{{
-<?php $image = get_first_image($params); ?>
+<?php the_first_image($params); ?>"
 }}}
 
 = Uso por defecto =
@@ -15,7 +15,6 @@ Devuelve la primera imagen del post.
 {{{
 <?php
 $args = array(
-	 'object'    => true,
 	 'size'      => 'large',
 	 'post_id'   => null,
 	 'featured'  => 'true',
@@ -48,8 +47,8 @@ $args = array(
 = Ejemplos =
 
 {{{
-<?php $image = get_first_image(); ?>
+<img src="<?php the_first_image($params); ?>">
 }}}
 
 = Relacionado =
-[TheFirstImage]
+[GetFirstImage]
