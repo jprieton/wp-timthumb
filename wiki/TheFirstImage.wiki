@@ -7,7 +7,7 @@ Muestra la url de la primera imagen del post.
 = Uso =
 
 {{{
-<?php the_first_image($params); ?>"
+<?php the_first_image($params); ?>
 }}}
 
 = Uso por defecto =
