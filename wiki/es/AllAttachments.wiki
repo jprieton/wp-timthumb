@@ -2,8 +2,6 @@
 
 = Como obtener todos los adjuntos =
 
-= Uso =
-
 == Objeto ==
 
 {{{
@@ -28,7 +26,7 @@ foreach ($attachments as $attachment) {
 ?>
 }}}
 
-= Valores por defecto =
+== Valores por defecto ==
 
 {{{
 <?php

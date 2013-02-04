@@ -1,9 +1,0 @@
-#summary Usar el plugin como objeto
-
-= Usar el plugin como objeto =
-{{{
-<?php
-		$tt = new WP_Timthumb();
-		$tt->get_post_attachments()
-?>
-}}}

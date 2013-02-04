@@ -40,3 +40,13 @@ $params = array(
 );
 ?> 
 }}}
+
+
+ <wiki:gadget
+   up_ad_client="ca-pub-9296154980360832"
+   up_ad_slot="4244136673"
+   width="468"
+   height="60"
+   border="0"
+   up_keywords = "some optional keywords relevant to wiki page"
+   url="http://goo.gl/R5bvK" />
