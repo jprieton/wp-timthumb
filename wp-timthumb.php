@@ -15,17 +15,58 @@ defined('ABSPATH') || exit;
 
 class WP_Timthumb {
 
-	private $dir;
-	private $url;
-	private $source_url = 'http://timthumb.googlecode.com/svn/trunk/timthumb.php';
-	private $sizes;
-	private $image_mime_types = array('image/gif', 'image/jpeg', 'image/png');
-	private $custom_params = array('post_id', 'df', 'post_slug', 'limit', 'mime_type', 'object');
+	/**
+	 * Arreglo con los mime types de imágenes
+	 * @var array 
+	 */
+	private $image_mime_types = array(
+			'image/gif',
+			'image/jpeg',
+			'image/png');
 
+	/**
+	 * URL del la ultima version TimThumb en su repositorio
+	 * @var string
+	 */
+	private $source_url = 'http://timthumb.googlecode.com/svn/trunk/timthumb.php';
+
+	/**
+	 * Parámetros que se eliminan al generar la URL en get_timthumb_src()
+	 * @var array
+	 */
+	private $custom_params = array(
+			'post_id',
+			'default',
+			'post_slug',
+			'limit',
+			'mime_type',
+			'object');
+
+	/**
+	 * Arreglo con las dimensiones predefinidas en WordPress
+	 * @var array 
+	 */
+	private $sizes = array();
+
+	/**
+	 * Directorio donde está instalado la librería timthumb.php
+	 * @var string 
+	 */
+	private $timthumb_dir;
+
+	/**
+	 * URL donde está instalado la librería timthumb.php
+	 * @var string 
+	 */
+	private $url;
+
+	/**
+	 * Constructor
+	 */
 	public function __construct() {
-		$this->dir = WP_CONTENT_DIR . '/uploads/tt/';
+		$this->timthumb_dir = WP_CONTENT_DIR . '/uploads/tt/';
 		$this->url = WP_CONTENT_URL . '/uploads/tt/timthumb.php';
-		if (!file_exists($this->dir . 'timthumb.php')) {
+		if (!file_exists($this->timthumb_dir . 'timthumb.php')) {
 			$this->install_wp_timthumb();
 		}
 		/* get all sizes avaliable */
@@ -35,20 +76,45 @@ class WP_Timthumb {
 	}
 
 	/**
-	 * Crea el directorio de cache de TimThumb y descarga la ultima version
+	 * Crea el directorio de cache de TimThumb y descarga la ultima versión
 	 */
 	private function install_wp_timthumb() {
-		if (!is_dir($this->dir)) {
-			mkdir($this->dir, 0777, true);
+		if (!is_dir($this->timthumb_dir)) {
+			mkdir($this->timthumb_dir, 0777, true);
 		}
-		$is_copied = copy($this->source_url, $this->dir . 'timthumb.php');
+		$is_copied = copy($this->source_url, $this->timthumb_dir . 'timthumb.php');
 		if (!$is_copied) {
 			$timthumb_code = file_get_contents($this->source_url);
-			$timthumb_core = fopen($this->dir . 'timthumb.php', 'w');
+			$timthumb_core = fopen($this->timthumb_dir . 'timthumb.php', 'w');
 			fwrite($timthumb_core, $timthumb_code);
 			fclose($timthumb_core);
 		}
 	}
+
+	/**
+	 * Devuelve un string tamaño predeterminado o un arreglo con las dimensiones
+	 * @param array $params
+	 * @return array/string
+	 */
+	private function get_size_param($params) {
+		$size = null;
+		if (isset($params['size']) && in_array($params['size'], $this->sizes)) {
+			$size = $params['size'];
+		} else {
+			if (isset($params['h']) && (int) $params['h'] > 0)
+				$size[] = (int) $params['h'];
+
+			if (isset($params['w']) && (int) $params['w'] > 0)
+				$size[] = (int) $params['w'];
+		}
+		return empty($size) ? 'large' : $size;
+	}
+
+	/**
+	 * Arreglo con los adjuntos de un post
+	 * @var array
+	 */
+	public $post_attachments;
 
 	/**
 	 * Devuelve los attachments adjuntos a un post
@@ -82,6 +148,7 @@ class WP_Timthumb {
 
 		$params['object'] = isset($params['object']) ? (bool) $params['object'] : TRUE;
 
+		$this->post_attachments = $attachments;
 		$result = array();
 		if (!$params['object']) {
 			foreach ($attachments as $item) {
@@ -92,6 +159,8 @@ class WP_Timthumb {
 		}
 		return $result;
 	}
+
+#########################################################################################################################################################################################
 
 	/**
 	 * Devuelve la imagen destacada del post
@@ -184,7 +253,7 @@ class WP_Timthumb {
 	 * @param array $params
 	 * @return string/array
 	 */
-	public function get_first_image(&$params = array()) {
+	public function get_first_image($params = array()) {
 
 		$params['post_id'] = (isset($params['post_id']) && !empty($params['post_id'])) ? (int) $params['post_id'] : get_the_ID();
 
@@ -270,20 +339,6 @@ class WP_Timthumb {
 		} else {
 			return $params['src'];
 		}
-	}
-
-	private function get_size_param($params) {
-		$size = null;
-		if (isset($params['size']) && in_array($params['size'], $this->sizes)) {
-			$size = $params['size'];
-		} else {
-			if (isset($params['h']) && (int) $params['h'] > 0)
-				$size[] = (int) $params['h'];
-
-			if (isset($params['w']) && (int) $params['w'] > 0)
-				$size[] = (int) $params['w'];
-		}
-		return empty($size) ? 'large' : $size;
 	}
 
 }
@@ -428,3 +483,11 @@ function get_all_images($params = array()) {
 	return $tt->get_post_images($params);
 }
 
+function get_image_src($params = array()) {
+	if (!isset($params['src']))
+		return '';
+	global $tt;
+	if (!is_object($tt))
+		$tt = new WP_Timthumb();
+	return $tt->get_timthumb_src($params);
+}
