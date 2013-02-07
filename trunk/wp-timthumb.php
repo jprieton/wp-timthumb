@@ -16,78 +16,77 @@ defined('ABSPATH') || exit;
 class WP_Timthumb {
 
 	/**
-	 * Arreglo con los mime types de imágenes
+	 * Parámetros que se deben omitir al generar la url
 	 * @var array 
-	 */
-	private $image_mime_types = array(
-			'image/gif',
-			'image/jpeg',
-			'image/png');
-
-	/**
-	 * URL del la ultima version TimThumb en su repositorio
-	 * @var string
-	 */
-	private $source_url = 'http://timthumb.googlecode.com/svn/trunk/timthumb.php';
-
-	/**
-	 * Parámetros que se eliminan al generar la URL en get_timthumb_src()
-	 * @var array
 	 */
 	private $custom_params = array(
-			'post_id',
-			'default',
-			'post_slug',
-			'limit',
-			'mime_type',
-			'object');
+			'post_id' => null,
+			'default' => null,
+			'slug' => null,
+			'limit' => null,
+			'size' => null,
+			'mime_type' => null,
+			'featured' => null,
+			'attachment_id' => null,
+			'post__not_in' => null,
+			'object' => null);
 
 	/**
-	 * Arreglo con las dimensiones predefinidas en WordPress
+	 * Almacenamiento temporal de los adjuntos
 	 * @var array 
 	 */
-	private $sizes = array();
+	public $post_attachments = array();
 
 	/**
-	 * Directorio donde está instalado la librería timthumb.php
-	 * @var string 
+	 *  Arreglo con los mime-type mas usados
+	 * @var array
 	 */
-	private $timthumb_dir;
+	private $mime_types = array(
+			'image' => array('image/gif', 'image/jpeg', 'image/png'),
+			'pdf' => array('application/pdf')
+	);
 
 	/**
-	 * URL donde está instalado la librería timthumb.php
-	 * @var string 
+	 * Directorio donde está la librería timthumb.php
+	 * @var string
 	 */
-	private $url;
+	private $lib_dir = '';
 
 	/**
-	 * Constructor
+	 * URL para descargar la última versión de la librería TimThumb
+	 * @var string
 	 */
+	private $lib_src = 'http://timthumb.googlecode.com/svn/trunk/timthumb.php';
+
+	/**
+	 * URL de la librería TimThumb a usar al construir la url del recorte
+	 * @var type 
+	 */
+	private $lib_url = '';
+
 	public function __construct() {
-		$this->timthumb_dir = WP_CONTENT_DIR . '/uploads/tt/';
-		$this->url = WP_CONTENT_URL . '/uploads/tt/timthumb.php';
-		if (!file_exists($this->timthumb_dir . 'timthumb.php')) {
+		$this->lib_dir = WP_CONTENT_DIR . '/uploads/tt/';
+		$this->lib_url = WP_CONTENT_URL . '/uploads/tt/timthumb.php';
+		if (!file_exists($this->lib_dir . 'timthumb.php')) {
 			$this->install_wp_timthumb();
 		}
-		/* get all sizes avaliable */
-		$this->sizes = get_intermediate_image_sizes();
-		/* add full size */
-		$this->sizes[] = 'full';
 	}
 
 	/**
-	 * Crea el directorio de cache de TimThumb y descarga la ultima versión
+	 * Instala/actualiza la librería TimThumb
 	 */
 	private function install_wp_timthumb() {
-		if (!is_dir($this->timthumb_dir)) {
-			mkdir($this->timthumb_dir, 0777, true);
+		if (!is_dir($this->lib_dir)) {
+			mkdir($this->lib_dir, 0777, true);
 		}
-		$is_copied = copy($this->source_url, $this->timthumb_dir . 'timthumb.php');
+		# Intentamos copiar directamente desde la url
+		$is_copied = copy($this->lib_src, $this->lib_dir . 'timthumb.php');
+		# Si no logra copiar directamente intentamos crear el archivo
 		if (!$is_copied) {
-			$timthumb_code = file_get_contents($this->source_url);
-			$timthumb_core = fopen($this->timthumb_dir . 'timthumb.php', 'w');
-			fwrite($timthumb_core, $timthumb_code);
-			fclose($timthumb_core);
+			$tt_code = file_get_contents($this->lib_src);
+			$tt_core = fopen($this->lib_dir . 'timthumb.php', 'w');
+			fwrite($tt_core, $tt_code);
+			fclose($tt_core);
 		}
 	}
 
@@ -98,6 +97,12 @@ class WP_Timthumb {
 	 */
 	private function get_size_param($params) {
 		$size = null;
+		if (empty($this->sizes)) {
+			/* get all sizes avaliable */
+			$this->sizes = get_intermediate_image_sizes();
+			/* add full size */
+			$this->sizes[] = 'full';
+		}
 		if (isset($params['size']) && in_array($params['size'], $this->sizes)) {
 			$size = $params['size'];
 		} else {
@@ -106,15 +111,20 @@ class WP_Timthumb {
 
 			if (isset($params['w']) && (int) $params['w'] > 0)
 				$size[] = (int) $params['w'];
+
+			if (count($size) != 2) {
+				$size = 'large';
+			}
 		}
 		return empty($size) ? 'large' : $size;
 	}
 
-	/**
-	 * Arreglo con los adjuntos de un post
-	 * @var array
-	 */
-	public $post_attachments;
+	function get_attachment_image($params) {
+		$size = $this->get_size_param($params);
+		$temp = wp_get_attachment_image_src($params['attachment_id'], $size);
+		unset($params['attachment_id']);
+		return $temp[0];
+	}
 
 	/**
 	 * Devuelve los attachments adjuntos a un post
@@ -123,8 +133,8 @@ class WP_Timthumb {
 	 */
 	public function get_post_attachments($params = array()) {
 
-		if (isset($params['post_slug'])) {
-			$params['post_id'] = get_page_by_path($params['post_slug'])->ID;
+		if (isset($params['slug'])) {
+			$params['post_id'] = get_page_by_path($params['slug'])->ID;
 
 			if ($params['post_id'] == NULL) {
 				return array();
@@ -135,32 +145,123 @@ class WP_Timthumb {
 		$params['post_id'] = isset($params['post_id']) ? (int) $params['post_id'] : get_the_ID();
 		$params['limit'] = isset($params['limit']) ? (int) $params['limit'] : -1;
 
+		# Parámetros base
 		$args = array(
 				'post_type' => 'attachment',
 				'posts_per_page' => $params['limit'],
 				'post_parent' => $params['post_id']
 		);
 
-		if (isset($params['mime_type'])) {
-			$args['post_mime_type'] = $params['mime_type'];
+		# Si se define la exclusión de adjuntos
+		if (isset($params['post__not_in'])) {
+			$args['post__not_in'] = (is_array($params['post__not_in'])) ? $params['post__not_in'] : array($params['post__not_in']);
 		}
-		$attachments = get_posts($args);
+
+		# Si se define el tipo de adjunto
+		if (isset($params['mime_type'])) {
+			if (array_key_exists($params['mime_type'], $this->mime_types)) {
+				$args['post_mime_type'] = $this->mime_types[$params['mime_type']];
+			} else {
+				$args['post_mime_type'] = $params['mime_type'];
+			}
+		}
+
+		$this->post_attachments = get_posts($args);
 
 		$params['object'] = isset($params['object']) ? (bool) $params['object'] : TRUE;
 
-		$this->post_attachments = $attachments;
 		$result = array();
 		if (!$params['object']) {
-			foreach ($attachments as $item) {
+			foreach ($this->post_attachments as $item) {
 				$result[] = $item->guid;
 			}
 		} else {
-			$result = $attachments;
+			$result = $this->post_attachments;
 		}
 		return $result;
 	}
 
-#########################################################################################################################################################################################
+	/**
+	 * Obtiene las imagenes de un post
+	 * @param type $args
+	 * @return object
+	 */
+	function get_post_images($params = array()) {
+
+		# Si no está definido el post_id usar el actual
+		$params['post_id'] = isset($params['post_id']) ? (int) $params['post_id'] : get_the_ID();
+		$params['limit'] = isset($params['limit']) ? (int) $params['limit'] : -1;
+		$is_object = isset($params['object']) ? (bool) $params['object'] : TRUE;
+		$params['object'] = TRUE;
+		$params['mime_type'] = 'image';
+
+		$featured = FALSE;
+
+		if (isset($params['featured'])) {
+			$params['featured'] = (bool) $params['featured'];
+			$featured = $this->get_featured_image($params);
+
+			if (!empty($featured)) {
+				$params['limit'] = ($params['featured'] && $params['limit'] > 0) ? $params['limit'] - 1 : $params['limit'];
+				$params['post__not_in'] = $featured->ID;
+			}
+		}
+
+		$images = array();
+		if ($params['limit'] > 0 or $params['limit'] === -1) {
+			$images = $this->get_post_attachments($params);
+		}
+
+		$attachments = array();
+		if ($featured && $params['featured'] === TRUE) {
+			$attachments[] = $featured;
+		}
+		$attachments = array_merge($attachments, $images);
+
+		$thumbnails = array();
+		foreach ($attachments as &$_item) {
+			$params['attachment_id'] = $_item->ID;
+			$params['src'] = (isset($params['size']) && $params['size'] == 'full') ? $_item->guid : $this->get_attachment_image($params);
+			$thumbnails[] = $_item->thumbnail = $this->get_timthumb_src($params);
+		}
+		unset($_item);
+		$this->post_attachments = $attachments;
+		return ($is_object) ? $attachments : $thumbnails;
+	}
+
+	/**
+	 * Devuelve la URL con los parámetros para el recorte de la imagen con TimThumb
+	 * @param array $params
+	 * @return string
+	 */
+	function get_timthumb_src($params) {
+
+		if (!isset($params['src']) && !empty($this->post_attachments) && !isset($params['attachment_id'])) {
+			$params['attachment_id'] = $this->post_attachments->ID;
+		}
+
+		if (isset($params['attachment_id'])) {
+			$params['src'] = $this->get_attachment_image($params);
+		}
+
+		# Debe estar definido al menos el parametro src
+		if (isset($params['src'])) {
+			# Eliminar parametros innecesarios
+			$params = array_diff_key($params, $this->custom_params);
+			if (count($params) > 1) {
+				# Crear un string con todos los parámetros
+				foreach ($params as $key => $value) {
+					$_src[] = "{$key}={$value}";
+				}
+				$src = $this->lib_url . '?' . implode('&amp;', $_src);
+				return $src;
+			} else {
+				return $params['src'];
+			}
+		} else {
+			return $params['src'];
+		}
+	}
 
 	/**
 	 * Devuelve la imagen destacada del post
@@ -174,171 +275,13 @@ class WP_Timthumb {
 
 		// Search attachment_id
 		$params['attachment_id'] = get_post_meta($params['post_id'], '_thumbnail_id', true);
-		unset($params['post_id'], $params['object']);
 
 		if (!$params['attachment_id'])
 			return array();
 
-		$attachment = get_post($params['attachment_id']);
-		$attachment->thumbnail = $this->get_timthumb_src($params);
-		return ($is_object) ? $attachment : $attachment->thumbnail;
-	}
-
-	/**
-	 * Obtiene las imagenes de un post
-	 * @param type $args
-	 * @return object
-	 */
-	function get_post_images($params = array()) {
-		// defaults
-
-		$params['post_id'] = isset($params['post_id']) ? (int) $params['post_id'] : get_the_ID();
-		$params['limit'] = isset($params['limit']) ? (int) $params['limit'] : -1;
-		$is_object = isset($params['object']) ? (bool) $params['object'] : TRUE;
-		$params['object'] = TRUE;
-		$params['mime_type'] = $this->image_mime_types;
-
-		$attachments = $this->get_post_attachments($params);
-
-		unset($params['mime_type']);
-
-		if (isset($params['featured']) && $params['featured'] === TRUE) {
-			// Search for featured image
-			$featured = $this->get_featured_image($params);
-			if (!empty($featured)) {
-				foreach ($attachments as $key => $_item) {
-					if ($_item->ID == $featured_ID) {
-						$_temp = $_item;
-						unset($attachments[$key]);
-						array_unshift($attachments, $_temp);
-						break;
-					}
-					unset($_item);
-				}
-			}
-		}
-
-		$featured_ID = get_post_meta($params['post_id'], '_thumbnail_id', true);
-		if (!empty($featured_ID)) {
-			
-		}
-
-		// defaults
-
-		unset($params['post_id'], $params['post_id'], $params['object'], $params['limit']);
-		$params = array_merge(array('src' => ''), $params);
-		if (isset($params['size'])) {
-			$size = $params['size'];
-		}
-		$image = array();
-		foreach ($attachments as &$_item) {
-			if (isset($size)) {
-				$params['size'] = $size;
-			}
-			$params['attachment_id'] = $_item->ID;
-			$_image = $this->get_attachment_image($params);
-			$params['src'] = $_image;
-			unset($params['default']);
-			$image[] = $_item->thumbnail = $this->get_timthumb_src($params);
-		}
-		unset($_item);
-		$this->_attachments = $attachments;
-		$this->_current_attachment = -1;
-		$this->_attachment_count = count($this->_attachments);
-		return ($is_object) ? $attachments : $image;
-	}
-
-	/**
-	 * Devuelve la primera imagen del post
-	 * @param array $params
-	 * @return string/array
-	 */
-	public function get_first_image($params = array()) {
-
-		$params['post_id'] = (isset($params['post_id']) && !empty($params['post_id'])) ? (int) $params['post_id'] : get_the_ID();
-
-		if (isset($params['featured']) && $params['featured'] === TRUE) {
-			// Search for featured image
-			$featured = $this->get_featured_image($params);
-			if (!empty($featured)) {
-				return $featured;
-			}
-		}
-
-		$is_object = isset($params['object']) ? (bool) $params['object'] : TRUE;
-		$params['object'] = TRUE;
-		$params['limit'] = 1;
-
-		$attachments = $this->get_post_images($params);
-
-		if (count($attachments) > 0)
-			$attachments = $attachments[0];
-
-		if (empty($attachments)) {
-			if (isset($params['default'])) {
-				$attachments = get_bloginfo('template_url') . $params['default'];
-			} else {
-				$attachments = '';
-			}
-		} else {
-			$params['attachment_id'] = $attachments->ID;
-			$attachments->thumbnail = $this->get_timthumb_src($params);
-		}
-
-		if ($is_object) {
-			return $attachments;
-		} else {
-			return (is_object($attachments)) ? $attachments->thumbnail : $attachments;
-		}
-	}
-
-	/**
-	 * <pre>
-	 * 'size',<br>
-	 * 'attachment_id',<br>
-	 * 'h',<br>
-	 * 'w',<br>
-	 * </pre>
-	 * @param array $params
-	 * @return string
-	 */
-	function get_attachment_image(&$params) {
-		$size = $this->get_size_param($params);
-		$temp = wp_get_attachment_image_src($params['attachment_id'], $size);
-		unset($params['attachment_id']);
-		return $temp[0];
-	}
-
-	/**
-	 * <pre>
-	 * 'src',<br>
-	 * 'h',<br>
-	 * 'w',<br>
-	 * </pre>
-	 * @param array $params
-	 * @return string
-	 */
-	function get_timthumb_src($params) {
-
-		if (isset($params['attachment_id'])) {
-			$params['src'] = $this->get_attachment_image($params);
-		}
-		if (isset($params['h']) or isset($params['w'])) {
-			// Remove unused params
-			foreach ($this->custom_params as $item) {
-				unset($params[$item]);
-			}
-			$src = $this->url . '?';
-			$_src[] = 'src=' . $params['src'];
-			unset($params['src']);
-			foreach ($params as $key => $value) {
-				$_src[] = "{$key}={$value}";
-			}
-			$src .= implode('&amp;', $_src);
-			return $src;
-		} else {
-			return $params['src'];
-		}
+		$this->post_attachments[0] = get_post($params['attachment_id']);
+		$this->post_attachments[0]->thumbnail = $this->get_timthumb_src($params);
+		return ($is_object) ? $this->post_attachments[0] : $this->post_attachments[0]->thumbnail;
 	}
 
 }
@@ -347,40 +290,37 @@ global $tt;
 $tt = !is_object($tt) ? null : $tt;
 
 /**
- * Devuelve la primera imagen del post, por defecto trae la imagen destacada
- * si el par&aacute;metro <i>object</i> es falso devolvera el string con la url de la imagen,
- * de lo contrario devuelve el objeto
+ * Devuelve los adjuntos de un post
+ * @global WP_Timthumb $tt
  * @param array $params
- * @return string|array
- * @since 2.0
+ * @return array
  */
-function get_first_image($params = array()) {
+function get_post_attachments($params = array()) {
 	global $tt;
 	if (!is_object($tt))
 		$tt = new WP_Timthumb();
-	# defaults
-	$params['object'] = isset($params['object']) ? (bool) $params['object'] : TRUE;
-	$params['featured'] = isset($params['featured']) ? (bool) $params['featured'] : TRUE;
-	$image = $tt->get_first_image($params);
-	return $image;
+	return $tt->get_post_attachments($params);
 }
 
 /**
- * Muestra la primera imagen del post
+ * Devuelve las im&aacute;genes del post
+ * si el par&aacute;metro <i>object</i> es falso devolvera un arreglo con los string con la url de la imagen,
+ * de lo contrario devuelve un arreglo de objetos
+ * @global WP_Timthumb $tt
  * @param array $params
- * @since 2.1.1
+ * @return array
  */
-function the_first_image($params = array()) {
-	# override object param
-	$params['object'] = FALSE;
-	echo get_first_image($params);
+function get_post_images($params = array()) {
+	global $tt;
+	if (!is_object($tt))
+		$tt = new WP_Timthumb();
+	return $tt->get_post_images($params);
 }
 
 /**
  * Devuelve la imagen destacada del post
  * @global WP_Timthumb $tt
  * @param array $params
- * @since 2.1.1
  * @return object|string
  */
 function get_featured_image($params = array()) {
@@ -391,103 +331,66 @@ function get_featured_image($params = array()) {
 }
 
 /**
- * Muestra la url de la imagen destacada
+ * Muestra la url de primera imagen del post (la imagen destacada por defecto)
  * @param array $params
- * @since 2.1.1
  */
 function the_featured_image($params = array()) {
+	# override object param
 	$params['object'] = FALSE;
 	echo get_featured_image($params);
 }
 
 /**
- * Devuelve las im&aacute;genes del post
- * si el par&aacute;metro <i>object</i> es falso devolvera un arreglo con los string con la url de la imagen,
- * de lo contrario devuelve un arreglo de objetos
- * @param array $params
- * @return array
- * @since 2.0
- */
-function get_post_images($params = array()) {
-	global $tt;
-	if (!is_object($tt))
-		$tt = new WP_Timthumb();
-	return $tt->get_post_images($params);
-}
-
-function get_timthumb_image($params) {
-	global $tt;
-	if (!is_object($tt))
-		$tt = new WP_Timthumb();
-	return $tt->get_timthumb_src($params);
-}
-
-function timthumb_image($params) {
-	echo get_timthumb_image($params);
-}
-
-/**
- * Devuelve los adjuntos de un post
+ * Devuelve la primera imagen del post, por defecto trae la imagen destacada,
+ * si la imagen destacada no existe devuelve la primera imagen adjunta
  * @global WP_Timthumb $tt
  * @param array $params
- * @return array
- * @since 2.1.1
+ * @return string|array
  */
-function get_post_attachments($params = array()) {
+function get_first_image($params = array()) {
 	global $tt;
 	if (!is_object($tt))
 		$tt = new WP_Timthumb();
-
-	return $tt->get_post_attachments($params);
+	# defaults
+	$params['object'] = isset($params['object']) ? (bool) $params['object'] : TRUE;
+	$params['featured'] = isset($params['featured']) ? (bool) $params['featured'] : TRUE;
+	$params['limit'] = 1;
+	global $tt;
+	if (!is_object($tt))
+		$tt = new WP_Timthumb();
+	$first_image = $tt->get_post_images($params);
+	return $first_image[0];
 }
 
 /**
- * Devuelve un string con la url del adjunto
+ * Muestra la url de primera imagen del post (la imagen destacada por defecto)
  * @param array $params
- * @return string
- * @since 2.1.1
  */
-function get_post_first_attachment($params = array()) {
-	# override limit param
-	$params['limit'] = 1;
+function the_first_image($params = array()) {
 	# override object param
 	$params['object'] = FALSE;
-	$attachment = get_post_attachments($params);
-	if (count($attachment) > 0) {
-		return $attachment[0];
-	} else {
-		return '';
-	}
+	echo get_first_image($params);
 }
 
 /**
- * Muestra un string con la url del primer adjunto
- * @param array $params
- * @since 2.1.1
- */
-function the_first_attachment($params = array()) {
-	echo get_first_attachment($params);
-}
-
-/**
- * Devuelve todas las imagenes adjuntas post
+ * Devuelve el string de la url del recorte del TimThumb
  * @global WP_Timthumb $tt
- * @param type $params
- * @return type
+ * @param array $params
+ * @return string
  */
-function get_all_images($params = array()) {
-	global $tt;
-	if (!is_object($tt))
-		$tt = new WP_Timthumb();
-	$params['limit'] = isset($params['limit']) ? $params['limit'] : -1;
-	return $tt->get_post_images($params);
-}
-
-function get_image_src($params = array()) {
+function get_timthumb_src($params = array()) {
 	if (!isset($params['src']))
 		return '';
 	global $tt;
 	if (!is_object($tt))
 		$tt = new WP_Timthumb();
 	return $tt->get_timthumb_src($params);
+}
+
+/**
+ * Muestra la url de primera imagen del post (la imagen destacada por defecto)
+ * @param array $params
+ */
+function the_timthumb_src($params = array()) {
+	echo get_timthumb_src($params);
 }

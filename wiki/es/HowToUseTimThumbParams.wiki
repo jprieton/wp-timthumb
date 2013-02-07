@@ -1,0 +1,20 @@
+#summary Como usar los parámetros de TimThumb Image Resize
+
+= Como usar los parámetros de TimThumb Image Resize =
+
+Adicionalmente a los parametros requeridos por cada metodo para obtener imagenes/adjuntos se pueden incluir parametros adicionales propios de la libreria de TimThumb,
+estos parámetros se pueden revisar en el site del projecto: [http://www.binarymoon.co.uk/2012/02/complete-timthumb-parameters-guide/ Timthumb 101: Parameters listing]
+
+= Ejemplo =
+
+Mostrar la imagen destacada con un recorte a 100x100px:
+{{{
+<?php 
+$params = array(
+	'w' => 100,
+  'h' => 100,
+);
+?>
+<img src=" <?php the_featured_image($params); ?>
+}}}
+
