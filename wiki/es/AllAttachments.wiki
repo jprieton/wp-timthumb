@@ -14,7 +14,7 @@ foreach ($tt->post_attachments as $attachment) {
 }
 ?>
 }}}
-Sin embargo tambien es válido 
+Sin embargo también es válido 
 {{{
 <?php
 $tt = new WP_Timthumb();
@@ -49,3 +49,9 @@ $params = array(
 );
 ?> 
 }}}
+
+== Retorno ==
+
+(array)
+  Lista de objetos, para mas detalles revisar la documentación en wordpress [http://codex.wordpress.org/Function_Reference/get_post#Return get_post()].
+  Adicionalmente, en cada objeto está el campo ´thumbnail´ (string) donde se almacena la url de la imagen usando la librería TimThumb en caso de ser definido atributos de alto/ancho
