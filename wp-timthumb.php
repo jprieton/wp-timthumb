@@ -379,8 +379,6 @@ function the_first_image($params = array()) {
  * @return string
  */
 function get_timthumb_src($params = array()) {
-	if (!isset($params['src']))
-		return '';
 	global $tt;
 	if (!is_object($tt))
 		$tt = new WP_Timthumb();
