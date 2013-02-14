@@ -227,9 +227,7 @@ class WP_Timthumb {
 		unset($_item);
 		$this->post_attachments = $attachments;
 		return ($is_object) ? $attachments : $thumbnails;
-	}
-
-	/**
+	}/**
 	 * Devuelve la URL con los parámetros para el recorte de la imagen con TimThumb
 	 * @param array $params
 	 * @return string
@@ -379,8 +377,6 @@ function the_first_image($params = array()) {
  * @return string
  */
 function get_timthumb_src($params = array()) {
-	if (!isset($params['src']))
-		return '';
 	global $tt;
 	if (!is_object($tt))
 		$tt = new WP_Timthumb();
