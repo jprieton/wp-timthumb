@@ -17,7 +17,7 @@ class WP_Timthumb {
 
 	/**
 	 * Parámetros que se deben omitir al generar la url
-	 * @var array 
+	 * @var array
 	 */
 	private $custom_params = array(
 			'post_id' => null,
@@ -33,7 +33,7 @@ class WP_Timthumb {
 
 	/**
 	 * Almacenamiento temporal de los adjuntos
-	 * @var array 
+	 * @var array
 	 */
 	public $post_attachments = array();
 
@@ -56,15 +56,17 @@ class WP_Timthumb {
 	 * URL para descargar la última versión de la librería TimThumb
 	 * @var string
 	 */
-	private $lib_src = 'http://timthumb.googlecode.com/svn/trunk/timthumb.php';
+	//private $lib_src = 'http://timthumb.googlecode.com/svn/trunk/timthumb.php';
+	private $lib_src = '';
 
 	/**
 	 * URL de la librería TimThumb a usar al construir la url del recorte
-	 * @var type 
+	 * @var type
 	 */
 	private $lib_url = '';
 
 	public function __construct() {
+		$this->lib_src = WP_PLUGIN_DIR . '/wp-timthumb/timthumb.php';
 		$this->lib_dir = WP_CONTENT_DIR . '/uploads/tt/';
 		$this->lib_url = WP_CONTENT_URL . '/uploads/tt/timthumb.php';
 		if (!file_exists($this->lib_dir . 'timthumb.php')) {
@@ -227,7 +229,9 @@ class WP_Timthumb {
 		unset($_item);
 		$this->post_attachments = $attachments;
 		return ($is_object) ? $attachments : $thumbnails;
-	}/**
+	}
+
+	/**
 	 * Devuelve la URL con los parámetros para el recorte de la imagen con TimThumb
 	 * @param array $params
 	 * @return string
