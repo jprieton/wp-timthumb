@@ -14,10 +14,14 @@ Helper for retrieve TimThumb thumbnails and attachments
 
 Helper for retrieve TimThumb thumbnails and attachments
 
+[Project Page](http://code.google.com/p/wp-timthumb/) | [Getting Started](http://code.google.com/p/wp-timthumb/)
+
+
 == Installation ==
 
-1. Upload `plugin-name.php` to the `/wp-content/plugins/` directory
+1. Upload `timthumb-helper.php` to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
+3. That's it. You're ready to go!
 
 == Changelog ==
 
