@@ -1,0 +1,42 @@
+#summary Getting Started
+
+= Getting Started =
+
+== Basic Usage ==
+
+=== To get first image ===
+{{{
+<?php if (have_posts()) : ?>
+	<?php while (have_posts()) : the_post(); ?>
+		<!-- do stuff ... -->
+		<img src="<?php the_first_image() ?>">
+	<?php endwhile; ?>
+<?php endif; ?>
+}}}
+
+This return something as
+{{{
+<img src="http://your-site/wp-content/uploads/2012/11/your-image.jpg">
+}}}
+
+To get all images
+{{{
+<?php if (have_posts()) : ?>
+	<?php while (have_posts()) : the_post(); ?>
+		<?php $images = get_post_images(); ?>
+		<? foreach ($images as $item) : ?>
+			<!-- do stuff ... -->
+			<img src="<?php echo $item->thumbnail ?>">
+		<?php endforeach; ?>
+	<?php endwhile; ?>
+<?php endif; ?>
+}}}
+
+This return something as
+{{{
+<img src="http://your-site/wp-content/uploads/2012/11/your-image-1.jpg">
+<img src="http://your-site/wp-content/uploads/2012/11/your-image-2.jpg">
+<img src="http://your-site/wp-content/uploads/2012/11/your-image-3.jpg">
+<!-- more images -->
+<img src="http://your-site/wp-content/uploads/2012/11/your-image-end.jpg">
+}}}
