@@ -4,13 +4,14 @@
 
 == Basic Usage ==
 
-=== To get first image ===
+=== Show path to featured image ===
+
 {{{
 <?php if (have_posts()) : ?>
-	<?php while (have_posts()) : the_post(); ?>
-		<!-- do stuff ... -->
-		<img src="<?php the_first_image() ?>">
-	<?php endwhile; ?>
+  <?php while (have_posts()) : the_post(); ?>
+    <!-- do stuff ... -->
+    <img src="<?php the_featured_image() ?>">
+  <?php endwhile; ?>
 <?php endif; ?>
 }}}
 
@@ -19,16 +20,99 @@ This return something as
 <img src="http://your-site/wp-content/uploads/2012/11/your-image.jpg">
 }}}
 
-To get all images
+=== Get featured image object ===
+
+{{{
+<?php
+if (have_posts()) :
+  while (have_posts()) :
+    the_post();
+    // do stuff ...
+    $image = get_featured_image();
+  // do more stuff ...
+  endwhile;
+endif;
+?>
+}}}
+
+This return an *WP_Post* object
+
 {{{
 <?php if (have_posts()) : ?>
-	<?php while (have_posts()) : the_post(); ?>
-		<?php $images = get_post_images(); ?>
-		<? foreach ($images as $item) : ?>
-			<!-- do stuff ... -->
-			<img src="<?php echo $item->thumbnail ?>">
-		<?php endforeach; ?>
-	<?php endwhile; ?>
+  <?php while (have_posts()) : the_post(); ?>
+    <!-- do stuff ... -->
+    <img src="<?php the_first_image() ?>">
+  <?php endwhile; ?>
+<?php endif; ?>
+}}}
+
+This return something as
+{{{
+<img src="http://your-site/wp-content/uploads/2012/11/your-image.jpg">
+}}}
+
+=== Get first image object ===
+
+{{{
+<?php
+if (have_posts()) :
+  while (have_posts()) :
+    the_post();
+    // do stuff ...
+    $image = get_first_image();
+  // do more stuff ...
+  endwhile;
+endif;
+?>
+}}}
+
+This return an *WP_Post* object
+
+=== Get all attachments from post ===
+{{{
+<?php
+if (have_posts()) :
+  while (have_posts()) :
+    the_post();
+    // do stuff ...
+    $attachments = get_post_attachments();
+  // do more stuff ...
+  endwhile;
+endif;
+?>
+}}}
+
+This return an array of *WP_Post* object
+
+=== Get all images from post ===
+{{{
+<?php
+if (have_posts()) :
+  while (have_posts()) :
+    the_post();
+    // do stuff ...
+    $image = get_post_images();
+  // do more stuff ...
+  endwhile;
+endif;
+?>
+}}}
+
+This return an array of *WP_Post* object
+
+*Note:* {{{ get_post_images() }}} is an shortcut for {{{ get_post_attachments(array('mime_type' => 'image')) }}} and {{{ get_post_attachments(array('mime_type' => array('image/gif', 'image/jpeg', 'image/png'))) }}}
+
+Example:
+
+{{{
+<?php if (have_posts()) : ?>
+  <?php while (have_posts()) : the_post(); ?>
+    <?php $images = get_post_images(); ?>
+    <? foreach ($images as $item) : ?>
+      <!-- do stuff ... -->
+      <img src="<?php echo $item->thumbnail ?>">
+    <?php endforeach; ?>
+  <?php endwhile; ?>
 <?php endif; ?>
 }}}
 
