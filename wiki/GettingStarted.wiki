@@ -51,6 +51,22 @@ This return something as
 <img src="http://your-site/wp-content/uploads/2012/11/your-image.jpg">
 }}}
 
+=== Show path to first image ===
+
+{{{
+<?php if (have_posts()) : ?>
+  <?php while (have_posts()) : the_post(); ?>
+    <!-- do stuff ... -->
+    <img src="<?php the_first_image() ?>">
+  <?php endwhile; ?>
+<?php endif; ?>
+}}}
+
+This return something as
+{{{
+<img src="http://your-site/wp-content/uploads/2012/11/your-image.jpg">
+}}}
+
 === Get first image object ===
 
 {{{
