@@ -1,5 +1,4 @@
 #summary Getting Started
-#labels Basicusage
 
 = Getting Started =
 
