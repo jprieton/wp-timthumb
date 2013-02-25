@@ -100,7 +100,24 @@ endif;
 
 This return an array of *WP_Post* object
 
-*Note:* {{{ get_post_images() }}} is an shortcut for {{{ get_post_attachments(array('mime_type' => 'image')) }}} and {{{ get_post_attachments(array('mime_type' => array('image/gif', 'image/jpeg', 'image/png'))) }}}
+*Note:*
+{{{
+<?php get_post_images() ?>
+}}}
+is an shortcut for
+{{{
+<?php
+$params['mime_type'] = 'image';
+get_post_attachments($params);
+?>
+}}}
+and/or
+{{{
+<?php
+$params['mime_type'] = array('image/gif', 'image/jpeg', 'image/png');
+get_post_attachments($params)
+?>
+}}}
 
 Example:
 
