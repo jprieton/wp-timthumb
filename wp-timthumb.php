@@ -20,16 +20,31 @@ class WP_Timthumb {
 	 * @var array
 	 */
 	private $custom_params = array(
-			'post_id' => null,
-			'default' => null,
-			'slug' => null,
-			'limit' => null,
-			'size' => null,
-			'mime_type' => null,
-			'featured' => null,
 			'attachment_id' => null,
+			'default' => null,
+			'featured' => null,
+			'limit' => null,
+			'mime_type' => null,
+			'object' => null,
+			'post' => null,
 			'post__not_in' => null,
-			'object' => null);
+			'post_id' => null,
+			'post_content' => null,
+			'shortcode' => null,
+			'size' => null,
+			'slug' => null);
+
+	/**
+	 * Almacenamiento temporal de las galerias
+	 * @var array
+	 */
+	private $galleries = array();
+
+	/**
+	 * Almacenamiento temporal de las galerias
+	 * @var array
+	 */
+	private $galleries_temp = array();
 
 	/**
 	 * Almacenamiento temporal de los adjuntos
@@ -286,6 +301,76 @@ class WP_Timthumb {
 		return ($is_object) ? $this->post_attachments[0] : $this->post_attachments[0]->thumbnail;
 	}
 
+	public function get_post_galleries($params = array()) {
+
+		$params['shortcode'] = isset($params['shortcode']) ? $params['shortcode'] : false;
+		$params['post_id'] = isset($params['post']) ? (int) $params['post'] : false;
+		$params['post'] = (isset($params['post']) && is_object($params['post'])) ? $params['post'] : false;
+
+		$content = '';
+
+		if ($params['shortcode'] or $params['post_id'] or $params['post']) {
+
+			if ($params['shortcode']) {
+				$content = $params['shortcode'];
+			} elseif (!is_object($params['post']) && $params['post_id']) {
+				$params['post'] = get_post($params['post_id']);
+				$content = $params['post']->post_content;
+			} else {
+				$content = $params['post']->post_content;
+			}
+		} else {
+			global $post;
+			$params['post'] = $post;
+			$content = $params['post']->post_content;
+		}
+
+		// Almacena el shortcode sin procesar en $this->galleries_temp;
+		$this->get_galleries_shotcodes($content);
+
+		if (count($this->galleries_temp) > 0) {
+			foreach ($this->galleries_temp as $gallery) {
+				$_ids = explode(',', $gallery['ids']);
+				$_gallery = array();
+
+				foreach ($_ids as $attachment_id) {
+					$params['object'] = TRUE;
+					$params['attachment_id'] = (int) $attachment_id;
+					$item_gallery = get_post($attachment_id);
+
+					if (empty($item_gallery))
+						continue;
+
+					$item_gallery->thumbnail = $this->get_timthumb_src($params);
+					$_gallery[] = $item_gallery;
+				}
+
+				if (isset($gallery['orderby']) && $gallery['orderby'] == 'rand') {
+					shuffle($_gallery);
+				}
+				$this->galleries[] = $_gallery;
+			}
+		}
+		return $this->galleries;
+	}
+
+	private function get_galleries_shotcodes($content) {
+		$pattern = get_shortcode_regex();
+		return preg_replace_callback("/$pattern/s", array($this, 'store_gallery'), $content);
+	}
+
+	private function store_gallery($m) {
+		// allow [[foo]] syntax for escaping a tag
+		if ($m[1] == '[' && $m[6] == ']') {
+			return substr($m[0], 1, -1);
+		}
+		if ($m[2] == "gallery") {
+			$tag = $m[2];
+			$attr = shortcode_parse_atts($m[3]);
+			$this->galleries_temp[] = $attr;
+		}
+	}
+
 }
 
 global $tt;
@@ -393,4 +478,11 @@ function get_timthumb_src($params = array()) {
  */
 function the_timthumb_src($params = array()) {
 	echo get_timthumb_src($params);
+}
+
+function get_post_galleries($params = array()) {
+	global $tt;
+	if (!is_object($tt))
+		$tt = new WP_Timthumb();
+	return $tt->get_post_galleries($params);
 }
