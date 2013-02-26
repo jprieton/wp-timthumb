@@ -29,7 +29,7 @@ if (have_posts()) :
     the_post();
     // do stuff ...
     $image = get_featured_image();
-  // do more stuff ...
+    // do more stuff ...
   endwhile;
 endif;
 ?>
@@ -92,6 +92,10 @@ if (have_posts()) :
     the_post();
     // do stuff ...
     $attachments = get_post_attachments();
+    foreach ($attachments as $item) {
+      // do something with the attachment
+    }
+
     // do more stuff ...
   endwhile;
 endif;
@@ -107,7 +111,12 @@ if (have_posts()) :
   while (have_posts()) :
     the_post();
     // do stuff ...
-    $image = get_post_images();
+
+    $images = get_post_images();
+    foreach ($images as $item) {
+      // do something with the image
+    }
+
     // do more stuff ...
   endwhile;
 endif;
@@ -174,7 +183,7 @@ if (have_posts()) :
 
       foreach ($gallery as $image) {
         // Loop for each image as WP_Post object
-        // ...
+        // do something with the image
       }
     }
     // do more stuff ...
