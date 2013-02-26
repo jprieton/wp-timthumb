@@ -4,7 +4,7 @@
   Plugin Name: TimThumb Helper
   Plugin URI: http://code.google.com/p/wp-timthumb/
   Description: Helper for attachments and TimThumb PHP Image Resizer. <a href="http://www.binarymoon.co.uk/2012/02/complete-timthumb-parameters-guide/" target="_blank">Complete TimThumb Parameters Guide</a>
-  Version: 1.0.0
+  Version: 1.1.0
   Author: Javier Prieto
   Author URI: http://code.google.com/p/wp-timthumb/
   License: GPL2+
@@ -301,6 +301,12 @@ class WP_Timthumb {
 		return ($is_object) ? $this->post_attachments[0] : $this->post_attachments[0]->thumbnail;
 	}
 
+  /**
+   * Return an array with galleries and WP_Post objects
+   * @global WP_Post $post
+   * @param array $params
+   * @return array
+   */
 	public function get_post_galleries($params = array()) {
 
 		$params['shortcode'] = isset($params['shortcode']) ? $params['shortcode'] : false;
@@ -354,16 +360,23 @@ class WP_Timthumb {
 		return $this->galleries;
 	}
 
+  /**
+   * Get galleries shortcodes from content
+   * @param string $content
+   * @return array
+   * @since 1.1.0
+   */
 	private function get_galleries_shotcodes($content) {
 		$pattern = get_shortcode_regex();
 		return preg_replace_callback("/$pattern/s", array($this, 'store_gallery'), $content);
 	}
 
+  /**
+   * Store galleries in an array
+   * @param array $m
+   * @since 1.1.0
+   */
 	private function store_gallery($m) {
-		// allow [[foo]] syntax for escaping a tag
-		if ($m[1] == '[' && $m[6] == ']') {
-			return substr($m[0], 1, -1);
-		}
 		if ($m[2] == "gallery") {
 			$tag = $m[2];
 			$attr = shortcode_parse_atts($m[3]);
@@ -480,6 +493,13 @@ function the_timthumb_src($params = array()) {
 	echo get_timthumb_src($params);
 }
 
+/**
+ * Return an array of galleries from content
+ * @global WP_Timthumb $tt
+ * @param array $params
+ * @return array
+ * @since 1.1.0
+ */
 function get_post_galleries($params = array()) {
 	global $tt;
 	if (!is_object($tt))
