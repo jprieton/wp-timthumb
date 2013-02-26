@@ -14,7 +14,10 @@ Helper for retrieve thumbnails, galleries and attachments apply TimThumb script 
 
 Helper for retrieve thumbnails, galleries and attachments apply TimThumb script if is set
 
-[Project Page](http://code.google.com/p/wp-timthumb/) | [Getting Started](http://code.google.com/p/wp-timthumb/)
+All getters return an WP_Post object unless the `object` parameter set to false
+
+* [Project Page](http://code.google.com/p/wp-timthumb/)
+* [Getting Started](http://code.google.com/p/wp-timthumb/wiki/GettingStarted)
 
 == Installation ==
 
@@ -23,6 +26,9 @@ Helper for retrieve thumbnails, galleries and attachments apply TimThumb script 
 3. That's it. You're ready to go!
 
 == Changelog ==
+
+= 1.1.1 =
+* Fix behavior with the `default` parameter in `the_first_image()`
 
 = 1.1.0 =
 * Documentation

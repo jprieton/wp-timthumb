@@ -243,6 +243,9 @@ class WP_Timthumb {
 		}
 		unset($_item);
 		$this->post_attachments = $attachments;
+		if (count($attachments) == 0 && isset($params['default'])) {
+			$thumbnails[] = get_bloginfo('template_url') . $params['default'];
+		}
 		return ($is_object) ? $attachments : $thumbnails;
 	}
 
@@ -312,15 +315,19 @@ class WP_Timthumb {
 		$params['shortcode'] = isset($params['shortcode']) ? $params['shortcode'] : false;
 		$params['post_id'] = isset($params['post']) ? (int) $params['post'] : false;
 		$params['post'] = (isset($params['post']) && is_object($params['post'])) ? $params['post'] : false;
+		$params['slug'] = isset($params['slug']) ? $params['slug'] : false;
 
 		$content = '';
 
-		if ($params['shortcode'] or $params['post_id'] or $params['post']) {
+		if ($params['shortcode'] or $params['post_id'] or $params['post'] or $post['slug']) {
 
 			if ($params['shortcode']) {
 				$content = $params['shortcode'];
 			} elseif (!is_object($params['post']) && $params['post_id']) {
 				$params['post'] = get_post($params['post_id']);
+				$content = $params['post']->post_content;
+			} elseif ($params['slug']) {
+				$params['post'] = get_page_by_path($params['slug']);
 				$content = $params['post']->post_content;
 			} else {
 				$content = $params['post']->post_content;
