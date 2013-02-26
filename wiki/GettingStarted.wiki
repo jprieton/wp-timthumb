@@ -76,7 +76,7 @@ if (have_posts()) :
     the_post();
     // do stuff ...
     $image = get_first_image();
-  // do more stuff ...
+    // do more stuff ...
   endwhile;
 endif;
 ?>
@@ -92,7 +92,7 @@ if (have_posts()) :
     the_post();
     // do stuff ...
     $attachments = get_post_attachments();
-  // do more stuff ...
+    // do more stuff ...
   endwhile;
 endif;
 ?>
@@ -108,7 +108,7 @@ if (have_posts()) :
     the_post();
     // do stuff ...
     $image = get_post_images();
-  // do more stuff ...
+    // do more stuff ...
   endwhile;
 endif;
 ?>
@@ -157,3 +157,30 @@ This return something as
 <!-- more images -->
 <img src="http://your-site/wp-content/uploads/2012/11/your-image-end.jpg">
 }}}
+
+
+=== Get galleries from content ===
+
+{{{
+<?php
+if (have_posts()) :
+  while (have_posts()) :
+    the_post();
+    // do stuff ...
+    $galleries = get_post_galleries(); // Return an array of galleries
+
+    foreach ($galleries as $gallery) {
+      // Loop for each gallery in case of more than one
+
+      foreach ($gallery as $image) {
+        // Loop for each image as WP_Post object
+        // ...
+      }
+    }
+    // do more stuff ...
+  endwhile;
+endif;
+?>
+}}}
+
+This return an array of galleries with an array of *WP_Post* object
