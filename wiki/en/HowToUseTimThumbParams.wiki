@@ -7,14 +7,13 @@ these parameters can be reviewed on the site of the project: [http://www.binarym
 
 = Example =
 
-Display featured image with a crop to 100x100px:
+Display the first image with a crop to 100x100px:
 {{{
-<?php 
+<?php
 $params = array(
 	'w' => 100,
   'h' => 100,
 );
 ?>
-<img src=" <?php the_featured_image($params); ?>
+<img src=" <?php the_first_image($params); ?>
 }}}
-
