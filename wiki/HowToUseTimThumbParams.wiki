@@ -1,20 +1,19 @@
-#summary Como usar los parametros de TimThumb
+#summary Como usar los parametros de TimThumb Image Resize
 
-= Como usar los parametros de TimThumb =
+= Using the parameters of TimThumb Image Resize =
 
-Adicionalmente a los parametros requeridos por cada metodo para botener imagenes se pueden incluir parametros adicionales propios de la libreria de TimThumb,
-estos paramtros se pueden revisar en el site del projecto: [http://www.binarymoon.co.uk/2012/02/complete-timthumb-parameters-guide/ Timthumb 101: Parameters listing]
+In addition to the parameters required by each method of obtaining images / attachments may include additional parameters specific to the TimThumb library,
+these parameters can be reviewed on the site of the project: [http://www.binarymoon.co.uk/2012/02/complete-timthumb-parameters-guide/ Timthumb 101: Parameters listing]
 
-= Ejemplo =
+= Example =
 
-Mostrar la imagen destacada con un recorte a 100x100px:
+Display the first image with a crop to 100x100px:
 {{{
-<?php 
+<?php
 $params = array(
 	'w' => 100,
   'h' => 100,
 );
 ?>
-<img src=" <?php the_featured_image($params); ?>
+<img src=" <?php the_first_image($params); ?>
 }}}
-
