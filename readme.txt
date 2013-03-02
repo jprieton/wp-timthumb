@@ -4,7 +4,7 @@ Donate link:
 Tags: timthumb, helper, thumbnail, images, attachments, gallery
 Requires at least: 3.3
 Tested up to: 3.5.1
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,8 +27,9 @@ All getters return an WP_Post object unless the `object` parameter set to false
 
 == Changelog ==
 
-= 1.1.1 =
-* Fix behavior with the `default` parameter in `the_first_image()`
+= 1.1.1
+* Fix issue with `default` parameter in ´the_first_image()´ ´the_featured_image()´
+* Added `slug` parameter to search by slug in `get_post_galleries()`
 
 = 1.1.0 =
 * Documentation
