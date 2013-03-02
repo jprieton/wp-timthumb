@@ -7,9 +7,9 @@ estos parámetros se pueden revisar en el site del projecto: [http://www.binarym
 
 = Ejemplo =
 
-Mostrar la imagen destacada con un recorte a 100x100px:
+Mostrar la primera imagen con un recorte a 100x100px:
 {{{
-<?php 
+<?php
 $params = array(
 	'w' => 100,
   'h' => 100,

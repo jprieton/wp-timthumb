@@ -4,7 +4,7 @@
   Plugin Name: TimThumb Helper
   Plugin URI: http://code.google.com/p/wp-timthumb/
   Description: Helper for attachments and TimThumb PHP Image Resizer. <a href="http://www.binarymoon.co.uk/2012/02/complete-timthumb-parameters-guide/" target="_blank">Complete TimThumb Parameters Guide</a>
-  Version: 1.1.0
+  Version: 1.1.1
   Author: Javier Prieto
   Author URI: http://code.google.com/p/wp-timthumb/
   License: GPL2+
@@ -243,9 +243,6 @@ class WP_Timthumb {
 		}
 		unset($_item);
 		$this->post_attachments = $attachments;
-		if (count($attachments) == 0 && isset($params['default'])) {
-			$thumbnails[] = get_bloginfo('template_url') . $params['default'];
-		}
 		return ($is_object) ? $attachments : $thumbnails;
 	}
 
@@ -439,13 +436,14 @@ function get_featured_image($params = array()) {
 }
 
 /**
- * Muestra la url de primera imagen del post (la imagen destacada por defecto)
+ * Displays the url of the post featured image
  * @param array $params
  */
 function the_featured_image($params = array()) {
 	# override object param
 	$params['object'] = FALSE;
-	echo get_featured_image($params);
+	$fi = get_featured_image($params);
+	echo (empty($fi) && !empty($params['default'])) ? get_bloginfo('template_url') . '/' . $params['default'] : $fi;
 }
 
 /**
@@ -471,13 +469,14 @@ function get_first_image($params = array()) {
 }
 
 /**
- * Muestra la url de primera imagen del post (la imagen destacada por defecto)
+ * Displays the url of the post first image (the featured image by default)
  * @param array $params
  */
 function the_first_image($params = array()) {
 	# override object param
 	$params['object'] = FALSE;
-	echo get_first_image($params);
+	$fi = get_first_image($params);
+	echo (empty($fi) && !empty($params['default'])) ? get_bloginfo('template_url') . '/' . $params['default'] : $fi;
 }
 
 /**
