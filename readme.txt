@@ -27,8 +27,12 @@ All getters return an WP_Post object unless the `object` parameter set to false
 
 == Changelog ==
 
-= 1.1.1
-* Fix issue with `default` parameter in ´the_first_image()´ ´the_featured_image()´
+= 1.1.2 =
+* Fix search by slug
+
+= 1.1.1 =
+* Fix issue with `default` parameter in `the_first_image()` and `the_featured_image()`
+* Fix error in `the_first_image()`
 * Added `slug` parameter to search by slug in `get_post_galleries()`
 
 = 1.1.0 =
