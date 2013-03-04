@@ -144,19 +144,49 @@ class WP_Timthumb {
 	}
 
 	/**
+	 * Return a post by slug
+	 * @global type $wpdb
+	 * @param array|string $slug
+	 * @return object
+	 */
+	private function get_post_by_slug($slug) {
+		if (is_array($slug) && count($slug) > 1) {
+			$post_type = $slug[1];
+			$slug = $slug[0];
+		} else {
+			$post_type = NULL;
+		}
+
+		if (is_null($post_type)) {
+			global $wpdb;
+			$post_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_name = %s", $slug));
+			if (!is_null($post_id)) {
+				$result = get_post($post_id);
+			} else {
+				$result = null;
+			}
+		} else {
+			$result = get_page_by_path($slug, OBJECT, $post_type);
+		}
+		return $result;
+	}
+
+	/**
 	 * Devuelve los attachments adjuntos a un post
 	 * @param array $params
 	 * @return array
 	 */
 	public function get_post_attachments($params = array()) {
 
+		# if is set, search post attachments by post slug
 		if (isset($params['slug'])) {
-			$params['post_id'] = get_page_by_path($params['slug'])->ID;
-
-			if ($params['post_id'] == NULL) {
+			$page_by_slug = $this->get_post_by_slug($params['slug']);
+			if (isset($page_by_slug->ID)) {
+				$params['post_id'] = $page_by_slug->ID;
+			} else {
 				return array();
 			}
-			unset($params['post_slug']);
+			unset($params['slug']);
 		}
 
 		$params['post_id'] = isset($params['post_id']) ? (int) $params['post_id'] : get_the_ID();
@@ -203,7 +233,7 @@ class WP_Timthumb {
 	 * @param type $args
 	 * @return object
 	 */
-	function get_post_images($params = array()) {
+	public function get_post_images($params = array()) {
 
 		# Si no está definido el post_id usar el actual
 		$params['post_id'] = isset($params['post_id']) ? (int) $params['post_id'] : get_the_ID();
@@ -286,14 +316,28 @@ class WP_Timthumb {
 	 * @return array/string
 	 */
 	public function get_featured_image($params = array()) {
+		// if is set, search featured image by post slug
+		if (isset($params['slug'])) {
+			$page_by_path = $this->get_post_by_slug($params['slug']);
+			if (isset($page_by_path->ID)) {
+				$params['post_id'] = $page_by_path->ID;
+			} else {
+				return array();
+			}
+			unset($params['slug']);
+		}
+
 		// Set defaults
 		$params['post_id'] = isset($params['post_id']) ? (int) $params['post_id'] : get_the_ID();
 		$is_object = isset($params['object']) ? (bool) $params['object'] : TRUE;
 
+		if (empty($params['post_id']))
+			return array();
+
 		// Search attachment_id
 		$params['attachment_id'] = get_post_meta($params['post_id'], '_thumbnail_id', true);
 
-		if (!$params['attachment_id'])
+		if (empty($params['attachment_id']))
 			return array();
 
 		$this->post_attachments[0] = get_post($params['attachment_id']);
@@ -309,31 +353,29 @@ class WP_Timthumb {
 	 */
 	public function get_post_galleries($params = array()) {
 
-		$params['shortcode'] = isset($params['shortcode']) ? $params['shortcode'] : false;
-		$params['post_id'] = isset($params['post']) ? (int) $params['post'] : false;
-		$params['post'] = (isset($params['post']) && is_object($params['post'])) ? $params['post'] : false;
-		$params['slug'] = isset($params['slug']) ? $params['slug'] : false;
-
 		$content = '';
-
-		if ($params['shortcode'] or $params['post_id'] or $params['post'] or $post['slug']) {
-
-			if ($params['shortcode']) {
-				$content = $params['shortcode'];
-			} elseif (!is_object($params['post']) && $params['post_id']) {
-				$params['post'] = get_post($params['post_id']);
-				$content = $params['post']->post_content;
-			} elseif ($params['slug']) {
-				$params['post'] = get_page_by_path($params['slug']);
-				$content = $params['post']->post_content;
-			} else {
-				$content = $params['post']->post_content;
+		if (isset($params['slug'])) {
+			$page_by_slug = $this->get_post_by_slug($params['slug']);
+			if (!is_null($page_by_slug)) {
+				$params['post'] = $page_by_slug;
+				$params['post_id'] = $page_by_slug->ID;
+				$content = $page_by_slug->post_content;
 			}
+		} elseif (!empty($params['shortcode'])) {
+			$content = $params['shortcode'];
+		} elseif (!empty($params['post']) && is_object($params['post'])) {
+			$content = $params['post']->post_content;
+		} elseif (!empty($params['post_id'])) {
+			$params['post'] = get_post((int) $params['post_id']);
+			$content = $params['post']->post_content;
 		} else {
 			global $post;
 			$params['post'] = $post;
 			$content = $params['post']->post_content;
 		}
+
+		if (empty($content))
+			return array();
 
 		// Almacena el shortcode sin procesar en $this->galleries_temp;
 		$this->get_galleries_shotcodes($content);
@@ -465,7 +507,7 @@ function get_first_image($params = array()) {
 	if (!is_object($tt))
 		$tt = new WP_Timthumb();
 	$first_image = $tt->get_post_images($params);
-	return $first_image[0];
+	return isset($first_image[0]) ? $first_image[0] : array();
 }
 
 /**
