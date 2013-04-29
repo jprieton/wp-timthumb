@@ -4,7 +4,7 @@
   Plugin Name: TimThumb Helper
   Plugin URI: http://code.google.com/p/wp-timthumb/
   Description: Helper for attachments and TimThumb PHP Image Resizer. <a href="http://www.binarymoon.co.uk/2012/02/complete-timthumb-parameters-guide/" target="_blank">Complete TimThumb Parameters Guide</a>
-  Version: 1.1.1
+  Version: 1.1.4
   Author: Javier Prieto
   Author URI: http://code.google.com/p/wp-timthumb/
   License: GPL2+
@@ -12,6 +12,12 @@
 
 // Prevent loading this file directly
 defined('ABSPATH') || exit;
+
+if (file_exists(dirname(__FILE__) . '/wp-timthumb-config.php'))
+	require_once('wp-timthumb-config.php');
+
+if (!defined('WPTT_HTACCESS'))
+	define('WPTT_HTACCESS', false);		// Enable .htaccess
 
 class WP_Timthumb {
 
@@ -105,6 +111,11 @@ class WP_Timthumb {
 			fwrite($tt_core, $tt_code);
 			fclose($tt_core);
 		}
+	}
+
+	private function create_htaccess() {
+
+
 	}
 
 	/**
@@ -361,8 +372,8 @@ class WP_Timthumb {
 				$params['post_id'] = $page_by_slug->ID;
 				$content = $page_by_slug->post_content;
 			}
-		} elseif (!empty($params['shortcode'])) {
-			$content = $params['shortcode'];
+		}elseif (!empty($params['shortcode']) or !empty($params['content'])) {
+				$content = ($params['shortcode']) ? $params['shortcode'] : $params['content'];
 		} elseif (!empty($params['post']) && is_object($params['post'])) {
 			$content = $params['post']->post_content;
 		} elseif (!empty($params['post_id'])) {
