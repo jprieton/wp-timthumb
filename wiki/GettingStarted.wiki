@@ -4,8 +4,9 @@
 
 == Basic Usage ==
 
-=== Show path to featured image ===
+=== Show the featured image path ===
 
+In the loop:
 {{{
 <?php if (have_posts()) : ?>
   <?php while (have_posts()) : the_post(); ?>
@@ -15,13 +16,16 @@
 <?php endif; ?>
 }}}
 
-This return something as
+This return:
 {{{
+<!-- the loop -->
 <img src="http://your-site/wp-content/uploads/2012/11/your-image.jpg">
+<!-- end loop -->
 }}}
 
 === Get featured image object ===
 
+In the loop, this return an *WP_Post* object
 {{{
 <?php
 if (have_posts()) :
@@ -35,7 +39,9 @@ endif;
 ?>
 }}}
 
-This return an *WP_Post* object
+=== Show the first image image path ===
+
+In the loop.
 
 {{{
 <?php if (have_posts()) : ?>
@@ -46,28 +52,14 @@ This return an *WP_Post* object
 <?php endif; ?>
 }}}
 
-This return something as
+This return:
 {{{
 <img src="http://your-site/wp-content/uploads/2012/11/your-image.jpg">
 }}}
 
-=== Show path to first image ===
+=== Get the first image object ===
 
-{{{
-<?php if (have_posts()) : ?>
-  <?php while (have_posts()) : the_post(); ?>
-    <!-- do stuff ... -->
-    <img src="<?php the_first_image() ?>">
-  <?php endwhile; ?>
-<?php endif; ?>
-}}}
-
-This return something as
-{{{
-<img src="http://your-site/wp-content/uploads/2012/11/your-image.jpg">
-}}}
-
-=== Get first image object ===
+In the loop, this return an *WP_Post* object
 
 {{{
 <?php
@@ -82,9 +74,9 @@ endif;
 ?>
 }}}
 
-This return an *WP_Post* object
-
 === Get all attachments from post ===
+
+This return an array of *WP_Post* object
 {{{
 <?php
 if (have_posts()) :
@@ -102,9 +94,9 @@ endif;
 ?>
 }}}
 
-This return an array of *WP_Post* object
-
 === Get all images from post ===
+
+This return an array of *WP_Post* object
 {{{
 <?php
 if (have_posts()) :
@@ -122,8 +114,6 @@ if (have_posts()) :
 endif;
 ?>
 }}}
-
-This return an array of *WP_Post* object
 
 *Note:*
 {{{
