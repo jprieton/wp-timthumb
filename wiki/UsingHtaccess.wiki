@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary Using .htacces for resize/crop image.
 #labels htaccess,timthumb
 
 = Using .htacces for resize/crop image =
